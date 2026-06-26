@@ -40,7 +40,7 @@ This repository contains the automated End-to-End (E2E) regression suite for ver
 10. **Fulfillment Verification:** Successfully redirect back to the parent web application context and confirm landing on the final `/checkout/finish` view.
 
 ### TC-NATCHEZ-CURBSTONE-03: E2E New User Shared Wishlist to Curbstone Checkout Flow
-**Title:** Verify user journey from shared wishlist checkout initiation,registration funnel, address placement selection, promo code validation,Shipping Assurance activation, and checkout clearance via the Curbstone payment iframe gateway.
+**Title:** Verify user journey from shared wishlist checkout initiation, registration funnel, address placement selection, promo code validation, Shipping Assurance activation, and checkout clearance via the Curbstone payment iframe gateway.
 
 **Execution Steps:**
 1. **Wishlist Access:** Navigate directly to the shared wishlist repository and add the item to the cart.
@@ -52,13 +52,26 @@ This repository contains the automated End-to-End (E2E) regression suite for ver
 7. **Secure Card Entry:** Populate the secure iframe input layouts with test credit cards and a randomized dynamic CVV token.
 8. **Fulfillment Verification:** Process payment via the interactive "PAY" controller and verify the application successfully loads the final `/checkout/finish` success context.
 
+### TC-NATCHEZ-CURBSTONE-04: Negative Validation - Invalid Card CVV Code Length
+**Title:** Verify that entering an incomplete or invalid CVV token length within the Curbstone iframe triggers a validation block and prevents order submission.
+
+**Execution Steps:**
+1. **Direct Catalog Navigation:** Bypass the high-load homepage by navigating directly to the `/Shop-All/` product listings context.
+2. **Cart Initiation:** Add a valid product item to the shopping cart and trigger the checkout registration funnel.
+3. **New User Registration:** Complete the registration layout by generating a randomized dynamic email and populating uniform password configurations.
+4. **Address Lookup Completion:** Populated the street address locator and execute a clean click over the Google Autocomplete matching drop-down option.
+5. **Gateway Engagement:** Transition through the checkout steps, select **Curbstone Credit Card** via its targeted structural label, and implement pacing controls to guarantee iframe load stability.
+6. **Defective Credential Input:** Inside the Curbstone input frame, enter valid test credit cards but supply an insufficient **2-digit CVV token (`43`)**.
+7. **Validation Assertion:** Click the interactive "PAY" action controller and verify that the descriptive error state message *"Card CVV code is too short."* becomes explicitly visible inside the iframe container.
+8. **Fulfillment Rejection:** Assert that the active page framework successfully rejects checkout transition and does **not** land on the final `/checkout/finish` view.
+
 ---
 
 ## 📊 Test Execution History & Logs
 
 Below is the compilation of the automation execution history loops, containing tracking order entries generated across both active payment integration test suites:
 
-| Order ID | Gateway / Suite | Execution Time | Payment Status |
+| Order ID | Gateway / Suite | Execution Time | Payment Status / Outcome |
 | :--- | :--- | :--- | :--- |
 | **10497** | Curbstone (Existing User) | June 23, 2026 at 4:21 PM | `Authorized` |
 | **10498** | Curbstone (Existing User) | June 23, 2026 at 4:27 PM | `Authorized` |
@@ -69,5 +82,4 @@ Below is the compilation of the automation execution history loops, containing t
 | **10528** | Curbstone (New User) | June 26, 2026 at 1:59 PM | `Authorized` |
 | **10530** | Curbstone (New User) | June 26, 2026 at 2:11 PM | `Authorized` |
 | **10531** | Curbstone (New User) | June 26, 2026 at 2:12 PM | `Authorized` |
-
 ---
