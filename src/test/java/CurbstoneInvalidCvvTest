@@ -1,0 +1,90 @@
+import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.WaitForSelectorState;
+import org.junit.jupiter.api.Test;
+import java.util.regex.Pattern;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+public class CurbstoneInvalidCvvTest {
+
+    @Test
+    void testCurbstoneInvalidCvv() {
+        try (Playwright playwright = Playwright.create()) {
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
+            BrowserContext context = browser.newContext();
+            Page page = context.newPage();
+
+            page.setDefaultTimeout(60000);
+            page.setDefaultNavigationTimeout(60000);
+
+            // Gjenerimi i email-it dinamik
+            int randomDigits = ThreadLocalRandom.current().nextInt(10000, 99999);
+            String dynamicEmail = "erjonitest" + randomDigits + "@gmail.com";
+
+            // 1. Navigimi te kategoria e pastër e produkteve
+            page.navigate("https://f2yt3gogmjqkq-main-bvxea6i.us-2.tst.site/Shop-All/");
+            
+            // Shtimi i produktit në shportë dhe kalimi në checkout
+            page.getByLabel("2 /").getByRole(AriaRole.BUTTON, new Locator.GetByRoleOptions().setName("Add to cart")).click();
+            page.getByRole(AriaRole.LINK, new Page.GetByRoleOptions().setName("Go to checkout")).click();
+            
+            // 2. Plotësimi i të dhënave të regjistrimit (New User)
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("First name*")).click();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("First name*")).fill("Erjon");
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Last name*")).click();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Last name*")).fill("Test");
+            
+            page.getByRole(AriaRole.CHECKBOX, new Page.GetByRoleOptions().setName("Create an account.")).check();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Email address*")).click();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Email address*")).fill(dynamicEmail);
+            
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Password must be at least 8")).click();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Password must be at least 8")).fill("E1234567890-=j");
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Confirm password*")).click();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Confirm password*")).fill("E1234567890-=j");
+            
+            // 3. Adresa përmes Google Autocomplete
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Street address*")).click();
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Street address*")).fill("777 b");
+            page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("777 B Ave, Virginia Beach, VA")).click();
+            
+            // 4. Kalimi te përzgjedhja e pagesës (SHTIMI I PRITJEVE DINAMIKE)
+            page.getByRole(AriaRole.CHECKBOX, new Page.GetByRoleOptions().setName("By selecting continue you")).check();
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue")).click();
+            
+            // Presim që URL të ndryshojë për të konfirmuar që u regjistrua me sukses llogaria e re
+            page.waitForURL("**/checkout/**");
+            // Pauzë e shkurtër vizuale për siguri përpara klikimit të label-it Curbstone
+            page.waitForTimeout(3000);
+            
+            // Klikimi i label-it Curbstone
+            page.locator("label").filter(new Locator.FilterOptions().setHasText("Curbstone Credit Card Pay by")).click();
+            
+            // 5. Plotësimi i kartës brenda iframe-it
+            FrameLocator curbstoneIframe = page.locator("iframe").contentFrame();
+            Locator cardNumberInput = curbstoneIframe.getByRole(AriaRole.TEXTBOX, new FrameLocator.GetByRoleOptions().setName("Card Number"));
+            
+            // Pritja që iframe dhe fusha të jenë plotësisht të dukshme në ekran
+            cardNumberInput.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE));
+            
+            cardNumberInput.click();
+            cardNumberInput.fill("5454545454545454");
+            
+            curbstoneIframe.getByLabel("card_exp_month").selectOption("1");
+            curbstoneIframe.getByLabel("card_exp_year").selectOption("2030");
+            curbstoneIframe.getByRole(AriaRole.TEXTBOX, new FrameLocator.GetByRoleOptions().setName("CVV")).click();
+            curbstoneIframe.getByRole(AriaRole.TEXTBOX, new FrameLocator.GetByRoleOptions().setName("CVV")).fill("43");
+            
+            // 6. Klikimi i butonit PAY
+            curbstoneIframe.getByRole(AriaRole.BUTTON, new FrameLocator.GetByRoleOptions().setName("PAY")).click();
+            
+            // 7. Assertion: Verifikimi që mesazhi i gabimit shfaqet
+            assertThat(curbstoneIframe.getByText("Card CVV code is too short.")).isVisible();
+            assertThat(page).not().hasURL(Pattern.compile(".*/checkout/finish.*"));
+
+            browser.close();
+        }
+    }
+}
