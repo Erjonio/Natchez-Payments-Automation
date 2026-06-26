@@ -39,6 +39,19 @@ This repository contains the automated End-to-End (E2E) regression suite for ver
 9. **Finalized Screening & SSN Validation:** Handle the dynamic transitional steps, process the secure SSN and Confirm SSN verification requirements, and finalize the payment workflow.
 10. **Fulfillment Verification:** Successfully redirect back to the parent web application context and confirm landing on the final `/checkout/finish` view.
 
+### TC-NATCHEZ-CURBSTONE-03: E2E New User Shared Wishlist to Curbstone Checkout Flow
+**Title:** Verify user journey from shared wishlist checkout initiation,registration funnel, address placement selection, promo code validation,Shipping Assurance activation, and checkout clearance via the Curbstone payment iframe gateway.
+
+**Execution Steps:**
+1. **Wishlist Access:** Navigate directly to the shared wishlist repository and add the item to the cart.
+2. **Account Creation:** Redirect to the checkout registration screen and complete the signup process using dynamically generated user data and credentials.
+3. **Billing Address Selection:** Fill out the shipping form and dynamically select the validated matching location from the automated lookup selector.
+4. **Discount Application:** Apply promo code `E2F1V6X3` and ensure cart totals recalculate.
+5. **Order Configurations:** Activate the **Shipping Assurance toggle** to append order validation protection.
+6. **Gateway Authorization:** Accept terms, select **Curbstone Credit Card**, and access the embedded secure iframe context.
+7. **Secure Card Entry:** Populate the secure iframe input layouts with test credit cards and a randomized dynamic CVV token.
+8. **Fulfillment Verification:** Process payment via the interactive "PAY" controller and verify the application successfully loads the final `/checkout/finish` success context.
+
 ---
 
 ## 📊 Test Execution History & Logs
@@ -47,11 +60,14 @@ Below is the compilation of the automation execution history loops, containing t
 
 | Order ID | Gateway / Suite | Execution Time | Payment Status |
 | :--- | :--- | :--- | :--- |
-| **10497** | Curbstone | June 23, 2026 at 4:21 PM | `Authorized` |
-| **10498** | Curbstone | June 23, 2026 at 4:27 PM | `Authorized` |
-| **10499** | Curbstone | June 23, 2026 at 4:32 PM | `Authorized` |
+| **10497** | Curbstone (Existing User) | June 23, 2026 at 4:21 PM | `Authorized` |
+| **10498** | Curbstone (Existing User) | June 23, 2026 at 4:27 PM | `Authorized` |
+| **10499** | Curbstone (Existing User) | June 23, 2026 at 4:32 PM | `Authorized` |
 | **10517** | Sezzle Sandbox | June 24, 2026 at 2:43 PM | `Authorized` |
 | **10520** | Sezzle Sandbox | June 24, 2026 at 3:28 PM | `Authorized` |
 | **10521** | Sezzle Sandbox | June 24, 2026 at 3:47 PM | `Authorized` |
+| **10528** | Curbstone (New User) | June 26, 2026 at 1:59 PM | `Authorized` |
+| **10530** | Curbstone (New User) | June 26, 2026 at 2:11 PM | `Authorized` |
+| **10531** | Curbstone (New User) | June 26, 2026 at 2:12 PM | `Authorized` |
 
 ---
