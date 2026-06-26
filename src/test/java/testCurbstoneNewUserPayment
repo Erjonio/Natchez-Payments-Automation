@@ -1,0 +1,114 @@
+import com.microsoft.playwright.*;
+import com.microsoft.playwright.options.AriaRole;
+import com.microsoft.playwright.options.WaitForSelectorState;
+import org.junit.jupiter.api.Test;
+import java.util.regex.Pattern;
+import java.util.concurrent.ThreadLocalRandom;
+
+import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
+
+public class CurbstoneNewUserPaymentTest {
+
+    @Test
+    void testCurbstoneNewUserPayment() {
+        try (Playwright playwright = Playwright.create()) {
+            Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
+            BrowserContext context = browser.newContext();
+            Page page = context.newPage();
+
+            page.setDefaultTimeout(60000);
+            page.setDefaultNavigationTimeout(60000);
+
+            // Gjenerimi i të dhënave random që regjistrimi të ketë sukses çdo herë
+            int randomDigits = ThreadLocalRandom.current().nextInt(10000, 99999);
+            String dynamicEmail = "erjonitest" + randomDigits + "@gmail.com";
+            int randomCvv = ThreadLocalRandom.current().nextInt(100, 1000);
+            String dynamicCvv = String.valueOf(randomCvv);
+
+            // 1. Shkuarja te artikulli nga Shared Wishlist
+            page.navigate("https://f2yt3gogmjqkq-main-bvxea6i.us-2.tst.site/wishlist/shared/a94c0f726d72de2310cd6dec8a5da371");
+            page.waitForTimeout(3000);
+
+            Locator addToCartBtn = page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Add to cart")).first();
+            addToCartBtn.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE));
+            addToCartBtn.click();
+            page.waitForTimeout(3000);
+
+            // 2. Navigimi te faqja e Regjistrimit (New User)
+            page.navigate("https://f2yt3gogmjqkq-main-bvxea6i.us-2.tst.site/checkout/register");
+            page.waitForTimeout(2000);
+
+            // 3. Plotësimi i të dhënave të llogarisë së re
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("First name*")).fill("Test");
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Last name*")).fill("Tester");
+
+            page.getByRole(AriaRole.CHECKBOX, new Page.GetByRoleOptions().setName("Create an account.")).check();
+            page.waitForTimeout(1000);
+
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Email address*")).fill(dynamicEmail);
+            page.waitForTimeout(1000);
+
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Password must be at least 8")).fill("E1234567890-=j");
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Confirm password*")).fill("E1234567890-=j");
+            page.waitForTimeout(1000);
+
+            // 4. Plotësimi i Adresës dhe zgjedhja e opsionit nga lista
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Street address*")).fill("777 b");
+            page.waitForTimeout(2000); // Pritje që lista e adresave të shfaqet dinamikisht
+
+            Locator addressOption = page.getByRole(AriaRole.OPTION, new Page.GetByRoleOptions().setName("777 B Ave, Virginia Beach, VA")).first();
+            addressOption.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE));
+            addressOption.click();
+            page.waitForTimeout(1500);
+
+            page.getByRole(AriaRole.CHECKBOX, new Page.GetByRoleOptions().setName("By selecting continue you")).check();
+            page.waitForTimeout(1000);
+
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("Continue")).click();
+            page.waitForTimeout(4000);
+
+            // 5. Aplikimi i Promo Code
+            page.getByRole(AriaRole.TEXTBOX, new Page.GetByRoleOptions().setName("Promo code")).fill("E2F1V6X3");
+            page.waitForTimeout(1000);
+            page.getByRole(AriaRole.BUTTON, new Page.GetByRoleOptions().setName("E2F1V6X3")).click();
+            page.waitForTimeout(3000);
+
+            // 6. Aktivizimi i Shipping Assurance (Protection Toggle)
+            Locator protectionToggle = page.locator(".checkout-summary-protection.not-added > .checkout-summary-protection__status");
+            if (protectionToggle.isVisible()) {
+                protectionToggle.click();
+                page.waitForTimeout(2000);
+            }
+
+            // 7. Pranimi i Termave dhe Përzgjedhja e Curbstone Credit Card
+            page.getByRole(AriaRole.CHECKBOX, new Page.GetByRoleOptions().setName("I have read and accepted the")).check();
+            page.waitForTimeout(1000);
+            page.locator("label").filter(new Locator.FilterOptions().setHasText("Curbstone Credit Card Pay by")).click();
+            page.waitForTimeout(3000);
+
+            // 8. Plotësimi i të dhënave të kartës brenda IFRAME-it të Curbstone
+            FrameLocator curbstoneIframe = page.locator("iframe").contentFrame();
+
+            Locator cardNumberInput = curbstoneIframe.getByRole(AriaRole.TEXTBOX, new FrameLocator.GetByRoleOptions().setName("Card Number"));
+            cardNumberInput.waitFor(new Locator.WaitForOptions().setState(WaitForSelectorState.VISIBLE));
+            cardNumberInput.fill("5454545454545454");
+            page.waitForTimeout(1000);
+
+            curbstoneIframe.getByLabel("card_exp_month").selectOption("10");
+            curbstoneIframe.getByLabel("card_exp_year").selectOption("2030");
+            page.waitForTimeout(1000);
+
+            curbstoneIframe.getByRole(AriaRole.TEXTBOX, new FrameLocator.GetByRoleOptions().setName("CVV")).fill(dynamicCvv);
+            page.waitForTimeout(2000);
+
+            // 9. Ekzekutimi i pagesës përfundimtare (Klikimi PAY)
+            curbstoneIframe.getByRole(AriaRole.BUTTON, new FrameLocator.GetByRoleOptions().setName("PAY")).click();
+
+            // 10. Verifikimi që kemi kaluar me sukses te faqja /checkout/finish
+            page.waitForURL("**/checkout/finish**", new Page.WaitForURLOptions().setTimeout(45000));
+            assertThat(page).hasURL(Pattern.compile(".*/checkout/finish.*"));
+
+            browser.close();
+        }
+    }
+}
