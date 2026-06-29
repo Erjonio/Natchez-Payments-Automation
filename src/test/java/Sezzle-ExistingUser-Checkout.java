@@ -7,10 +7,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
-public class SezzlePaymentTest {
+public class Sezzle-ExistingUser-Checkout {
 
     @Test
-    void testSezzlePayment() {
+    void testSezzle-ExistingUser-Checkout() {
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
             BrowserContext context = browser.newContext();
