@@ -7,10 +7,10 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
-public class CurbstoneNewUserPaymentTest {
+public class Curbstone-NewUser-Checkout {
 
     @Test
-    void testCurbstoneNewUserPayment() {
+    void testCurbstone-NewUser-Checkout() {
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
             BrowserContext context = browser.newContext();
