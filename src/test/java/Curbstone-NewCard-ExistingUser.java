@@ -7,7 +7,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertThat;
 
-public class CurbstonePaymentTest {
+public class Curbstone-NewCard-ExistingUser {
 
     @Test
     void test() {
