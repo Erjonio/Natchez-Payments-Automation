@@ -10,7 +10,7 @@ import static com.microsoft.playwright.assertions.PlaywrightAssertions.assertTha
 public class Curbstone-InvalidCvv-Test {
 
     @Test
-    void testCurbstoneInvalidCvv() {
+    void testCurbstone-InvalidCvv-Test() {
         try (Playwright playwright = Playwright.create()) {
             Browser browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false));
             BrowserContext context = browser.newContext();
